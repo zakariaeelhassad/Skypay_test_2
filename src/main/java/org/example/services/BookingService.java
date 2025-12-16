@@ -25,33 +25,27 @@ public class BookingService {
             throws InvalidDateException, UserNotFoundException, RoomNotFoundException,
             InsufficientBalanceException, RoomAlreadyBookedException {
 
-        // Validate dates
         ValidationUtil.validateDates(checkIn, checkOut);
 
-        // Get user
         User user = userService.getUserById(userId);
         if (user == null) {
             throw new UserNotFoundException("User with ID " + userId + " not found");
         }
 
-        // Get room
         Room room = roomService.getRoomByNumber(roomNumber);
         if (room == null) {
             throw new RoomNotFoundException("Room with number " + roomNumber + " not found");
         }
 
-        // Calculate total price
         int nights = ValidationUtil.calculateNights(checkIn, checkOut);
         int totalPrice = nights * room.getPricePerNight();
 
-        // Check balance
         if (user.getBalance() < totalPrice) {
             throw new InsufficientBalanceException(
                     "Insufficient balance. Required: " + totalPrice + ", Available: " + user.getBalance()
             );
         }
 
-        // Check room availability
         for (Booking b : bookings) {
             if (b.getRoom().getRoomNumber() == roomNumber &&
                     datesOverlap(checkIn, checkOut, b.getCheckIn(), b.getCheckOut())) {
